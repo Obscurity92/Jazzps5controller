@@ -1,6 +1,7 @@
-/*NOT WRITTEN BY ME, ORIGINAL CODE BY justEhCupcake.*/
+/*NOT WRITTEN BY ME, ORIGINAL CODE BY justEhCupcake*/
 
 /*BEGIN PS4 Controller Styling*/
+
 .controller.ds4 {
     background: url(Jazzskin.png);
     height: 700px;
@@ -24,7 +25,7 @@
 .ds4 .trigger {
     width: 99px;
     height: 100%;
-    background: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Trigger_Pressed.png);
+    background: url(Trigger_Pressed.png));
     opacity: 0;
 }
 
@@ -40,7 +41,7 @@
 .ds4 .bumper {
     width: 200px;
     height: 45px;
-    background: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Bumper.png) no-repeat;
+    background: url(Bumper.png) no-repeat;
     opacity: 0;
 }
 
@@ -76,7 +77,7 @@
 }
 
 .ds4 .touchpad.pressed {
-    background: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Touchpad.png) no-repeat center;
+    background: url(Touchpad.png) no-repeat center;
 }
 
 .ds4 .meta {
@@ -88,7 +89,7 @@
 }
 
 .ds4 .meta.pressed {
-    background: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Home.png) no-repeat center;
+    background: url(Home.png) no-repeat center;
 }
 
 /*Not needed, but I like keeping them here for posterity*/
@@ -113,7 +114,7 @@ background-position: 0 -70px;
 }
 
 .ds4 .back, .ds4 .start {
-    background: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Select.png);
+    background: url(Select.png);
     width: 26px;
     height: 43px;
     opacity: 0;
@@ -193,7 +194,7 @@ background-position: 0 -70px;
 
 .ds4 .stick {
     position: absolute;
-    background: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Sticks.png);
+    background: url(Sticks.png);
     height: 94px;
     width: 94px;
 }
@@ -271,7 +272,7 @@ background-position: 0 -70px;
 
 /*BEGIN PS4 White Controller Styling*/
 .ds4.white .back, .ds4 .start {
-    background-image: url(https://github.com/justEhCupcake/justEhCupcake.github.io/blob/f2856f8fa6d54e83d8b5758c990bfaa7c5735206/PS5_Display_Pics/Start.png);
+    background-image: url(Start.png);
     width: 26px;
     height: 43px;
 }
