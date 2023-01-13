@@ -1,1 +1,312 @@
-<h1>Hi</h1>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cayo Perico Payouts</title>
+		<style>
+			.bold {
+				font-weight: bold;
+			}
+
+			.row {
+				display: flex;
+				text-align: center;
+				align-items: center;
+				justify-content: center;
+				padding-bottom: 1em;
+			}
+
+			.row > div {
+				margin-left: 1em;
+				margin-right: 1em;
+			}
+
+			.important {
+				border: 1px solid #eee;
+				padding: 5px;
+			}
+
+			body {
+				background: #333;
+				color: #eee;
+				font-family: sans-serif;
+			}
+
+			h1, h3 {
+				display: block;
+				text-align: center;
+				text-decoration: underline;
+			}
+
+			h4 {
+				text-align: center;
+			}
+
+			hr {
+				margin-top: 1em;
+				max-width: 50vw;
+			}
+
+			table {
+				border-collapse: collapse;
+			}
+
+			th:nth-child(1) {
+				border-right: 1px solid #eee;
+			}
+
+			tr:nth-child(1) {
+				border-bottom: 1px solid #eee;
+			}
+
+			td {
+				text-align: center;
+				padding: 0.5em;
+			}
+
+			a, a:visited, a:link {
+				display: block;
+				text-align: center;
+				color: #eee;
+			}
+
+		</style>
+		<script>
+			function Secondary(weight, min_value, max_value, must_be_int) {
+				this.weight = weight;
+				this.min_value = min_value;
+				this.max_value = max_value;
+				this.must_be_int = must_be_int;
+			}
+
+			const secondary_info = {
+				"gold": new Secondary((2/3), 328584, 333192),
+				"cocaine": new Secondary((1/2), 220500, 225000),
+				"artwork": new Secondary((1/2), 176200, 199700, true),
+				"weed": new Secondary((3/8), 145980, 149265),
+				"cash": new Secondary((1/4), 78480, 89420),
+				"safe": new Secondary(0, 50000, 100000),
+			}
+
+			function inputConstraint(elem) {
+				if(elem.value == "") elem.value = elem.min;
+				else if(elem.max && elem.validity.rangeOverflow) elem.value = elem.max;
+				else if(elem.min && elem.validity.rangeUnderflow) elem.value = elem.min;
+				else if(elem.step && elem.validity.stepMismatch) elem.value = elem.min;
+			}
+
+			function updateCustomPayout(percent, take) {
+				const elem = document.querySelector('#custom-payout');
+				if(!elem) return;
+				elem.innerHTML = Math.floor(take * percent/100).toLocaleString();
+			}
+
+			function updatePrimary() {
+				const difficulty_multiplier = parseFloat(document.querySelector('#difficulty').value);
+				const target_value = parseInt(document.querySelector('#target').value);
+				const payout_value = (difficulty_multiplier * target_value) | 0;
+				document.querySelector('#primary-payout').innerHTML = payout_value.toLocaleString();
+				return payout_value;
+			}
+
+			function updateSecondaries() {
+				const payout_calc = document.querySelector('#payout-calc').value;
+				let carry_weight = parseInt(document.querySelector('#players').value);
+				let final_total = 0;
+
+				for(const target_name of ["gold", "cocaine", "artwork", "weed", "cash"]) {
+					const map_contains = parseInt(document.querySelector('#' + target_name).value);
+					const collect_elem = document.querySelector('#collect-' + target_name);
+					const take_elem = document.querySelector('#value-' + target_name);
+					const target = secondary_info[target_name];
+
+					let collect_value = 0;
+
+					if(map_contains * target.weight > carry_weight) {
+						collect_value = carry_weight / target.weight;
+						if(target.must_be_int) collect_value = Math.floor(collect_value);
+					} else {
+						collect_value = map_contains;
+					}
+
+					collect_elem.innerHTML = collect_value.toFixed(2);
+					let take = 0;
+					if(payout_calc === "random") {
+						take = Math.floor(Math.random() * (target.max_value - target.min_value + 1)) + target.min_value;
+					} else {
+						take = target[payout_calc];
+					}
+					take_elem.innerHTML = Math.floor(collect_value * take).toLocaleString();
+					final_total += collect_value * take;
+					carry_weight -= collect_value * target.weight;
+				}
+
+				{
+					const safe_take_elem = document.querySelector('#value-safe');
+					const safe = secondary_info["safe"];
+					let take = 0;
+					if(payout_calc === "random") {
+						take = Math.floor(Math.random() * (safe.max_value - safe.min_value + 1)) + safe.min_value;
+					} else {
+						take = safe[payout_calc];
+					}
+					safe_take_elem.innerHTML = take.toLocaleString();
+					final_total += take;
+				}
+
+				document.querySelector('#secondary-payout').innerHTML = final_total.toLocaleString();
+				return final_total;
+			}
+
+			function updateTotal() {
+				const primary = updatePrimary();
+				const secondaries = updateSecondaries();
+
+				const gross = primary + secondaries;
+				let net = Math.floor(gross - (gross * 0.12));
+				if(document.querySelector('#elite-challenge').checked) {
+					const difficulty = document.querySelector('#difficulty').value;
+					if(difficulty === "1.1") net += 100000;
+					else net += 50000;
+				}
+
+				document.querySelector('#gross-payout').innerHTML = gross.toLocaleString();
+				document.querySelector('#net-payout').innerHTML = net.toLocaleString();
+
+				const player_count = parseInt(document.querySelector('#players').value);
+				const extra_percentages_elem = document.querySelector('#extra-percentages');
+				if(player_count > 1) {
+					const loss_percent = 15 * (player_count-1);
+					const max_percent = 100 - loss_percent;
+					const max_take = Math.floor(net * max_percent/100);
+					const fifty_percent_take = Math.floor(net * 50/100);
+					const twenty_five_percent_take = Math.floor(net * 25/100);
+					extra_percentages_elem.innerHTML = `
+						<div class="data-output important">
+							<div class="bold">${max_percent}%</div>
+							$${max_take.toLocaleString()}
+						</div>
+						<div class="data-output">
+							<div class="bold">50%</div>
+							$${fifty_percent_take.toLocaleString()}
+						</div>
+						<div class="data-output">
+							<div class="bold">25%</div>
+							$${twenty_five_percent_take.toLocaleString()}
+						</div>
+						<div class="data-output">
+							<div class="bold"><input type="number" min="15" max="85" step="5" value="15" oninput="inputConstraint(this); updateCustomPayout(this.value, ${net})">%</div>
+							$<span id="custom-payout">0</span>
+						</div>`;
+						updateCustomPayout(15, net);
+				} else {
+					extra_percentages_elem.innerHTML = "";
+				}
+			}
+
+			window.onload = () => {
+				updateTotal();
+				document.body.innerHTML += `<a href="${location.href}" download="cayo_perico.html">Download this page for local use</a><br>`;
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Cayo Perico Payouts</h1>
+		<div class="top row">
+			<div class="user-input">
+				<div class="bold">Payout Calculation</div>
+				<select id="payout-calc" onchange="updateTotal()">
+					<option value="min_value" selected="selected">Minimum</option>
+					<option value="max_value">Maximum</option>
+					<option value="random">Random</option>
+				</select>
+			</div>
+			<div class="user-input">
+				<div class="bold">Players</div>
+				<input id="players" type="number" min="1" max="4" step="1" value="1" oninput="inputConstraint(this); updateTotal()">
+			</div>
+			<div class="user-input">
+				<div class="bold">Elite Challenge</div>
+				<input id="elite-challenge" type="checkbox" checked="checked" onchange="updateTotal()">
+			</div>
+		</div>
+		<hr>
+		<h3>Primary Target</h3>
+		<div class="row">
+			<div class="user-input">
+				<div class="bold">Difficulty</div>
+				<select id="difficulty" onchange="updateTotal()">
+					<option value="1.0" selected="selected">Normal</option>
+					<option value="1.1">Hard</option>
+				</select>
+			</div>
+			<div class="user-input">
+				<div class="bold">Target</div>
+				<select id="target" onchange="updateTotal()">
+					<option value="900000" selected="selected">Sinsimito Tequila</option>
+					<option value="1000000">Ruby Necklace</option>
+					<option value="1100000">Bearer Bonds</option>
+					<option value="1300000">Pink Diamond</option>
+					<option value="1900000">Panther Statue</option>
+				</select>
+			</div>
+			<div class="data-output">
+				<div class="bold">Payout</div>
+				$<span id="primary-payout">0</span>
+			</div>
+		</div>
+		<hr>
+		<h3>Secondary Targets</h3>
+		<div class="row">
+			<table>
+				<tr> <th></th><th>Gold</th><th>Cocaine</th><th>Artwork</th><th>Weed</th><th>Cash</th><th>Office Safe</th> </tr>
+				<tr>
+					<th>Map Contains</th>
+					<td><input id="gold" type="number" min="0" max="12" step="1" value="0" oninput="inputConstraint(this); updateTotal()"></td>
+					<td><input id="cocaine" type="number" min="0" max="12" step="1" value="0" oninput="inputConstraint(this); updateTotal()"></td>
+					<td><input id="artwork" type="number" min="0" max="12" step="1" value="0" oninput="inputConstraint(this); updateTotal()"></td>
+					<td><input id="weed" type="number" min="0" max="12" step="1" value="0" oninput="inputConstraint(this); updateTotal()"></td>
+					<td><input id="cash" type="number" min="0" max="12" step="1" value="0" oninput="inputConstraint(this); updateTotal()"></td>
+					<td><input type="checkbox" disabled="disabled" checked="checked"></td>
+				</tr>
+				<tr>
+					<th>Collect</th>
+					<td><span id="collect-gold">0</span></td>
+					<td><span id="collect-cocaine">0</span></td>
+					<td><span id="collect-artwork">0</span></td>
+					<td><span id="collect-weed">0</span></td>
+					<td><span id="collect-cash">0</span></td>
+					<td>Always</td>
+				</tr>
+				<tr>
+					<th>Take</th>
+					<td>$<span id="value-gold">0</span></td>
+					<td>$<span id="value-cocaine">0</span></td>
+					<td>$<span id="value-artwork">0</span></td>
+					<td>$<span id="value-weed">0</span></td>
+					<td>$<span id="value-cash">0</span></td>
+					<td>$<span id="value-safe">0</span></td>
+				</tr>
+			</table>
+		</div>
+		<div class="row">
+			<div class="data-output">
+				<div class="bold">Total</div>
+				$<span id="secondary-payout">0</span>
+			</div>
+		</div>
+		<hr>
+		<h3>Totals</h3>
+		<div class="row">
+			<div class="data-output">
+				<div class="bold">Gross</div>
+				$<span id="gross-payout">0</span>
+			</div>
+			<div class="data-output important">
+				<div class="bold">Net</div>
+				$<span id="net-payout">0</span>
+			</div>
+		</div>
+		<div class="row" id="extra-percentages">
+		</div>
+	</body>
+</html>
